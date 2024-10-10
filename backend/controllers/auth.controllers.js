@@ -37,7 +37,7 @@ export const signup = async (req, res) => {
         if(newUser) {
             // Generate JWT token
             generatetokenandsetcookie(newUser._id, res)
-            await newUser.save();
+            await newUser.save()
 
             res.status(201).json({
                 _id: newUser._id,
@@ -61,8 +61,10 @@ export const login = async (req, res) => {
     
     try {
         const {username, password} = req.body
-        const user = User.findOne({ username })
-        const isPasswordcorrect = await bcrypt.compare(password, user?.password || "")
+        const user = await User.findOne({ username })
+        const isPasswordcorrect = await bcrypt.compare(password, user?.password || "") 
+
+        console.log(user)
 
         if(!user || !isPasswordcorrect) {
             return res.status(400).json({error : "Invalid username or password"})
@@ -84,5 +86,11 @@ export const login = async (req, res) => {
 }
 
 export const logout = (req, res) => {
-    console.log("logoutUser");
+    try {
+        res.cookie("jwt", "", {maxAge: 0});
+        res.status(200).json({message: "Logged out successful"});
+    } catch (error) {
+        console.log("Error in signup controller", error.message)
+        res.status(500).json({error: "Internal server error"})
+    }
 }
